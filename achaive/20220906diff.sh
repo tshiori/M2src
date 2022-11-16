@@ -1,0 +1,4 @@
+diff ../result/loss/AkutagawauNeologd-#-t200work913914-v100-w5-e500-s#-mAkutagawa200work913914-alpha-worker1.txt ../result/loss/AkutagawauNeologd-#-t200work913914-v100-w5-e500-s#-mAkutagawa200work913914-alpha-worker1-2.txt
+diff ../result/loss/AkutagawauNeologd-#-t200work913914-v100-w5-e500-s#-mAkutagawa200work913914-alpha-worker1-symbol.txt ../result/loss/AkutagawauNeologd-#-t200work913914-v100-w5-e500-s#-mAkutagawa200work913914-alpha-worker1-symbol-2.txt
+diff ../result/loss/MiyazawauNeologd-#-t200work913911-v100-w5-e500-s#-mMiyazawa200work913911-alpha-worker1.txt ../result/loss/MiyazawauNeologd-#-t200work913911-v100-w5-e500-s#-mMiyazawa200work913911-alpha-worker1-2.txt
+diff ../result/loss/MiyazawauNeologd-#-t200work913911-v100-w5-e500-s#-mMiyazawa200work913911-alpha-worker1-symbol.txt ../result/loss/MiyazawauNeologd-#-t200work913911-v100-w5-e500-s#-mMiyazawa200work913911-alpha-worker1-symbol-2.txt
