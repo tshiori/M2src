@@ -17,7 +17,7 @@ import numpy as np
 dics = ['Ipadic','Naist','iNeologd','uNeologd','Juman','Unidic']
 ##重心・分散共分散を出力するかどうか
 save_ave = False #False->出力しない True->出力する
-save_cov = False
+save_cov = True
 
 ##パラメータ設定==============================
 #辞書名
@@ -80,7 +80,7 @@ try:
     print(cate2)
 except:
     exit()
-model_target = "200work"+str(cate1)+str(cate2)
+model_target = "ALLCorpus"
 print("model_target",model_target)
 
 ###テスト用作品の特徴抽出--------------------------------------------------------------------------------------
@@ -129,11 +129,20 @@ for i in range(0,len(auth_works)):
     elif(auth_works[i].duplicate==False and auth_works[i].novel==False and auth_works[i].category==cate2 ):
         file_list[cate2] = m.getFileNameByIdUseGlob(main_author,dic,auth_works[i],file_list[cate2])
 
+file_list_add_cate1 = file_list[cate1]
+m.printL(file_list_add_cate1)
 #file_list[cate1]とfile_list[cate2]からそれぞれ100作品ずつランダムに選ぶ
 import random
 for cate in [cate1,cate2]:
     random.seed(42)
     file_list[cate] = random.sample(file_list[cate],100)
+
+#マハラノビス距離計算のために10作品追加（Nolta2022発表資料用追加、Nolataspecialは追加無しでできた）-------
+random.seed(42)
+for name in file_list[cate1]:
+    file_list_add_cate1.remove(name)
+file_list_add_cate1 = random.sample(file_list[cate],1)
+#----------------------------------------------------------------------------------------------------------------
 
 file_list_all=file_list[cate1]+file_list[cate2]
 print("file_list_all length = ",len(file_list_all))
@@ -144,7 +153,9 @@ feature_books = np.empty((0, vector), float)
 novel_feature_books = np.empty((0, vector), float)
 other_feature_books = np.empty((0, vector), float)
 #各著者モデルの読み込み
-model_name = m.nameFile(main_author,dic,"#","200work"+str(cate1)+str(cate2),vector,window,epoc,"#",main_author+"200work"+str(cate1)+str(cate2),other,".model")
+#model_name = m.nameFile(main_author,dic,"#","200work"+str(cate1)+str(cate2),vector,window,epoc,"#",main_author+"200work"+str(cate1)+str(cate2),other,".model")
+#全著者モデルの読み込み
+model_name = m.nameFile(main_author,dic,"#","ALL",vector,window,epoc,"#",model_target,other,".model")
 model = word2vec.Word2Vec.load("../model/"+model_name)
 print( "model = "+model_name)
 for file_path in file_list[cate1]:
@@ -159,6 +170,17 @@ for file_path in file_list[cate2]:
         other_feature_books = np.append(other_feature_books, np.array([f_ave]), axis=0)
 
 feature_books = np.append(novel_feature_books,other_feature_books, axis=0)
+
+#マハラノビス距離計算のために1作品追加（Nolta2022発表資料用追加、Nolataspecialは追加無しでできた）-------
+novel_feature_books_add = np.empty((0, vector), float)
+for file_path in file_list_add_cate1:
+    #作品の特徴量f(f_ave)の計算
+    f_ave = m.get_f_ave(file_path,model,vector)
+    #作品の特徴量を特徴のリストに保存
+    novel_feature_books_add = np.append(novel_feature_books_add, np.array([f_ave]), axis=0)
+m.printL(novel_feature_books_add)
+#----------------------------------------------------------------------------------------------------------------
+
 
 '''
 print("PCA")
@@ -189,8 +211,8 @@ X_train, X_test, y_train, y_test = train_test_split(feature_books, y, train_size
 main_mean = np.mean(novel_feature_books, axis=0)
 main_var =  np.var(novel_feature_books, axis=0)
 #作品ファイル名とそのマハラノビス距離を書き込むファイルの指定と初期化
-m.resetFile("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreEuclid",str(cate1)+str(cate2),vector,window,epoc,sep,"#","#",".csv"))
-outf = open("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreEuclid",str(cate1)+str(cate2),vector,window,epoc,sep,"#","#",".csv"),"a")
+m.resetFile("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreEuclid",str(cate1)+str(cate2),vector,window,epoc,sep,model_target,"#",".csv"))
+outf = open("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreEuclid",str(cate1)+str(cate2),vector,window,epoc,sep,model_target,"#",".csv"),"a")
 for feature,cate in zip(feature_books,y):
     # ユークリッド距離の計算
     dist = np.sqrt(np.sum(np.square(main_mean-feature)/main_var))
@@ -200,15 +222,44 @@ for feature,cate in zip(feature_books,y):
     print(cate,file=outf)    
 outf.close()
 
+
+
 #分散共分散行列(cov),逆行列(cov_I)の計算
 cov = np.cov(novel_feature_books, rowvar=False,bias=True)
 print("calcurated cov, cov.shape()="+str(cov.shape))
 cov_I = np.linalg.inv(cov)
 print("calcurated cov_I, covI.shape()="+str(cov_I.shape))
 
+
+#マハラノビス距離計算のために1作品追加（Nolta2022発表資料用追加、Nolataspecialは追加無しでできた）-------
+novel_feature_books_added = np.append(novel_feature_books, novel_feature_books_add, axis=0)
+m.printL(novel_feature_books_added)
+main_mean = np.mean(novel_feature_books_added, axis=0)
+cov = np.cov(novel_feature_books_added, rowvar=False,bias=True)
+print("calcurated cov, cov.shape()="+str(cov.shape))
+cov_I = np.linalg.inv(cov)
+print("calcurated cov_I, covI.shape()="+str(cov_I.shape))
+#----------------------------------------------------------------------------------------------------------------
+
+
+#covとcov_Iのファイル保存
+if(save_cov):
+    m.resetFile("../result/average/"+m.nameFile(main_author,dic,"GenreMahalaCov",target,vector,window,epoc,sep,model_target,other,".csv"))
+    covf = open("../result/average/"+m.nameFile(main_author,dic,"GenreMahalaCov",target,vector,window,epoc,sep,model_target,other,".csv"),"a")
+
+    print("cov=",file=covf,end=",")                                          
+    covf.write(' '.join(list(map(str,cov))))                                 
+    print("",file=covf)                                                      
+    print("cov_I=",file=covf,end=",")                                        
+    covf.write(' '.join(list(map(str,cov_I))))                               
+    print("",file=covf,end="")      
+
+    covf.close
+
+
 #作品ファイル名とそのマハラノビス距離を書き込むファイルの指定と初期化
-m.resetFile("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreMahala",str(cate1)+str(cate2),vector,window,epoc,sep,"#","#",".csv"))
-outf = open("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreMahala",str(cate1)+str(cate2),vector,window,epoc,sep,"#","#",".csv"),"a")
+m.resetFile("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreMahala",str(cate1)+str(cate2),vector,window,epoc,sep,model_target,"#",".csv"))
+outf = open("../result/euclid/nolta/"+m.nameFile(main_author,dic,"GenreMahala",str(cate1)+str(cate2),vector,window,epoc,sep,model_target,"#",".csv"),"a")
 for feature,cate in zip(feature_books,y):
     # マハラノビス距離の計算
     dev = feature - main_mean

@@ -13,7 +13,7 @@ dics = ['Ipadic','Naist','iNeologd','uNeologd','Juman','Unidic']
 author_j_name = {"Akutagawa":"芥川",'Arisima':"有島",'Kajii':"梶井",'Kikuchi':"菊池",'Sakaguchi':"坂口",'Dazai':"太宰",'Nakajima':"中島",'Natsume':"夏目",'Makino':"牧野",'Miyazawa':"宮沢"}
 #authors = ['Akutagawa','Arisima','Kajii','Kikuchi','Sakaguchi','Dazai','Nakajima','Natsume','Makino','Miyazawa']
 authors = ['Akutagawa']
-#   authors = ['Miyazawa']
+#authors = ['Miyazawa']
 #authors = ['Sakaguchi']
 #グラフ用カラーリスト
 color_list = ['red','hotpink','darkorange','gold','skyblue','green','yellowgreen','brown','blue','black']
@@ -93,8 +93,10 @@ if usemodel == "all":
 
 #各著者のインスタンスを生成する
 for author in authors:
-
-    
+    model_name = m.nameFile(author,dic,"#","200work"+str(cate1)+str(cate2),vector,window,epoc,"#",author+"200work"+str(cate1)+str(cate2),other,".model")
+    model = word2vec.Word2Vec.load("../model/"+model_name)
+    print( "model = "+model_name)
+    '''
     if usemodel == "all":
         f=open("../result/svm/nolta/"+use_kernel+"/"+author+"uNeologd-t"+str(cate1)+"and"+str(cate2)+"-v100-w5-e500-s7030-mALLCorpus-NOstdCextension"+other+".csv","a")
         m.resetFile("../result/svm/nolta/"+use_kernel+"/"+author+"uNeologd-t"+str(cate1)+"and"+str(cate2)+"-v100-w5-e500-s7030-mALLCorpus-NOstdCextension"+other+".csv")
@@ -111,10 +113,11 @@ for author in authors:
         print( "model = "+model_name)
         f=open("../result/svm/nolta/"+use_kernel+"/"+author+"uNeologd-t200work"+str(cate1)+"and"+str(cate2)+"-v100-w5-e500-s7030-m"+author+"200work"+str(cate1)+str(cate2)+"-NOstdCextension"+other+".csv","a")
         m.resetFile("../result/svm/nolta/"+use_kernel+"/"+author+"uNeologd-t200work"+str(cate1)+"and"+str(cate2)+"-v100-w5-e500-s7030-m"+author+"200work"+str(cate1)+str(cate2)+"-NOstdCextension"+other+".csv")
-    
+  
 
     print(use_kernel,file=f)
     print("C,training_acc,test_acc",file=f)
+    '''
     print("=========================="+author+"===============================")
     #各著者のインスタンスを生成する
     auth_works = {}
@@ -252,7 +255,10 @@ for author in authors:
 
             from sklearn.svm import SVC
             print("parameter C = "+str(Cnum))
-            svm = SVC(kernel=use_kernel, gamma='scale', C=Cnum, random_state=0)
+            svm = SVC(kernel=use_kernel, gamma=0.1332283875294687, C=Cnum, random_state=0)
+            print("parameter gammma = 1/len(X_train[0])*X_train.var()=1/",len(X_train[0]),"*",X_train.var(),"=",1/(len(X_train[0])*X_train.var()))
+            print("parameter gammma = 1/len(X_test[0])*X_test.var()=1/",len(X_test[0]),"*",X_test.var(),"=",1/(len(X_test[0])*X_test.var()))
+
             svm.fit(X_train, y_train)
             from sklearn.metrics import accuracy_score
 
@@ -265,9 +271,9 @@ for author in authors:
             pred_test = svm.predict(X_test)
             accuracy_test = accuracy_score(y_test, pred_test)
             print('test data accuracy： %.2f' % accuracy_test)
-
+            '''
             print(Cnum,",", '%.2f' % accuracy_train,",",'%.2f' %accuracy_test,file=f)
-    
+            '''
 
         pass 
 
@@ -296,7 +302,7 @@ for author in authors:
                 print(Cnum,",", '%.2f' % accuracy_train,",",'%.2f' %accuracy_test,file=f)
     
             print("")
-    f.close
+    #f.close
 
 
 exit()

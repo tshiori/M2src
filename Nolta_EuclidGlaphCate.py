@@ -51,7 +51,7 @@ cate2=914
 
 #使用モデルのが学習したファイル
 model_targets = ["ALL","Learn","ALLCorpus","#"]
-model_target = "#"
+model_target = "ALLCorpus"
 #コーパス分割割合，その他
 sep = 100
 other = "#"
@@ -140,7 +140,7 @@ print(list( dist.values() ))
 #　リスト,　bin=棒の数, rwidth=棒の幅, color=色, ラベル, histtype='bar' ,stacked=True(積み上げる)
 
 ### 対数表示用
-ax.hist(list( dist.values() ), label=[cate_name[cate1],cate_name[cate2]],color=[cate_color[cate1],cate_color[cate2]],bins=np.logspace(0, 20, 20), range=(0, histmax), log=True ,rwidth=0.8,  histtype='bar', stacked=True)
+ax.hist(list( dist.values() ), label=[cate_name[cate1],cate_name[cate2]],color=[cate_color[cate1],cate_color[cate2]],bins=np.logspace(0, 7, 20), range=(0, histmax), log=True ,rwidth=0.8,  histtype='bar', stacked=True)
 ax.set_xscale("log")
 
 ### 普通
